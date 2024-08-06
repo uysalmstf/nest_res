@@ -40,10 +40,10 @@ export class UsersService {
             throw new HttpException("Followed User Info Not Found", 400);
         }
 
-        const amIfollowing = await this.userModel.find({follows: followUserInfo._id });
+        /*const amIfollowing = await this.userModel.find({follows: followUserInfo._id, _id: followUserDto.userId });
         if (amIfollowing) {
             throw new HttpException("Still Following", 400);
-        }
+        }*/
 
         const myInfoResult = await this.userModel.updateOne({_id: myInfo._id}, {
             $push: {

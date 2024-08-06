@@ -12,10 +12,22 @@ export class FeedService {
         @InjectModel(Users.name) private userModel: Model<Users>,
     ) {}
 
+    async findUserWithFollows(userId: string): Promise<Users> {
+        return this.userModel.findById(userId).populate('follows').exec();
+      }
+
     async getFeeds(feedDto: FeedDto) {
         const findUser = await this.userModel.findById(feedDto.userId);
-        if (!findUser) throw new HttpException('User Not Found', 404);
+        if (!findUser) throw new HttpException('User Not Found', 400);
 
-       
+const userWithFollows = await this.findUserWithFollows(feedDto.userId);
+const followedUserIds = userWithFollows.follows.map(followedUser => followedUser);
+        const posts = await this.postModel
+      .find({ createdBy: { $in: followedUserIds } })
+      .sort({ createdDate: -1 })  // createdDate alanına göre azalan sırada sıralama
+      .populate('createdBy')
+      .exec();
+
+    return posts;
     }
 }

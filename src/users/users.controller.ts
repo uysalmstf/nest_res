@@ -10,10 +10,10 @@ export class UsersController {
     constructor(private usersService: UsersService){}
     
     @Post()
-    createUser(@Body() createUserDto: CreateUserDto) {
+    async createUser(@Body() createUserDto: CreateUserDto) {
 
-       return this.usersService.createUser(createUserDto);
-    }
+        const user = await this.usersService.createUser(createUserDto);
+        return user._id;    }
 
     @Get()
     getAllUsers() {
