@@ -4,6 +4,7 @@ Post,
 Body,
 UsePipes,
 UseGuards,
+Req,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/createPost.dto';
 import { PostsService } from './posts.service';
@@ -15,7 +16,7 @@ export class PostsController {
 constructor(private postsService: PostsService) {}
 
 @Post()
-createPost(@Body() createPostDto: CreatePostDto) {
-  return this.postsService.createPost(createPostDto);
+createPost(@Body() createPostDto: CreatePostDto, @Req() req) {
+  return this.postsService.createPost(createPostDto, req.user._id);
 }
 }

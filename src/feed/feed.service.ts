@@ -16,11 +16,11 @@ export class FeedService {
         return this.userModel.findById(userId).populate('follows').exec();
       }
 
-    async getFeeds(feedDto: FeedDto) {
-        const findUser = await this.userModel.findById(feedDto.userId);
+    async getFeeds(feedDto: FeedDto, userId: string) {
+        const findUser = await this.userModel.findById(userId);
         if (!findUser) throw new HttpException('User Not Found', 400);
 
-const userWithFollows = await this.findUserWithFollows(feedDto.userId);
+const userWithFollows = await this.findUserWithFollows(userId);
 const followedUserIds = userWithFollows.follows.map(followedUser => followedUser);
         const posts = await this.postModel
       .find({ createdBy: { $in: followedUserIds } })

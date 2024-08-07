@@ -4,14 +4,18 @@ import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { FeedModule } from './feed/feed.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   // eslint-disable-next-line prettier/prettier
   imports: [
-    JwtModule.register({global: true,
-      secret: '102030'
+    ConfigModule.forRoot({
+      isGlobal: true, // ConfigModule'ün global olmasını sağlar, böylece diğer modüller de erişebilir.
     }),
-    MongooseModule.forRoot("mongodb+srv://root:102030@cluster0.t2vcm.mongodb.net/mongodeneme"),
+    JwtModule.register({global: true,
+      secret: process.env.SECRET_KEY
+    }),
+    MongooseModule.forRoot(process.env.MONGO_URI),
     UsersModule,
     PostsModule,
     FeedModule

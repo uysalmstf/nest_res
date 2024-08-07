@@ -12,11 +12,11 @@ export class PostsService {
         @InjectModel(Users.name) private userModel: Model<Users>,
     ) {}
 
-    async createPost(createPostDto: CreatePostDto) {
-        const findUser = await this.userModel.findById(createPostDto.userId);
+    async createPost(createPostDto: CreatePostDto, userId: string) {
+        const findUser = await this.userModel.findById(userId);
         if (!findUser) throw new HttpException('User Not Found', 404);
 
-        const newPost = new this.postModel({ content: createPostDto.content, createdBy: createPostDto.userId });
+        const newPost = new this.postModel({ content: createPostDto.content, createdBy: userId });
         const savedPost = await newPost.save();
         await findUser.updateOne({
           $push: {
