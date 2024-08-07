@@ -4,17 +4,59 @@ import { Model } from "mongoose";
 import { Users } from "src/schemas/user.schema";
 import { CreateUserDto } from "./dto/createUser.dto";
 import { FollowUserDto } from "./dto/followUser.dto";
+import { LoginUserDto } from "./dto/loginUser.dto";
+import * as bcrypt from 'bcrypt';
+import { JwtService } from "@nestjs/jwt";
 
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectModel(Users.name) private userModel: Model<Users>
+        @InjectModel(Users.name) private userModel: Model<Users>,
+        private jwtService: JwtService
     ) {}
 
-    createUser(createUserDto: CreateUserDto) {
-        const newUser = new this.userModel(createUserDto);
+    async loginUser(loginUserDto: LoginUserDto) {
+        
+        const {username, password} = loginUserDto
+        
+        const user = await this.userModel.findOne({username});
+        if (!user) {
+            
+            throw new HttpException("User Not Found", 400);
+        }
 
-        return newUser.save();
+        const passMatch = await bcrypt.compare(password, user.password);
+        if (!passMatch) {
+            
+            throw new HttpException("User Pass Does not match", 400);
+        }
+
+        return this.generateUserToken(user);
+    }
+
+    async generateUserToken(user) {
+
+        const accessToken = this.jwtService.sign({user}, {expiresIn: '1h'});
+
+        return accessToken;
+
+    }
+
+    async createUser(createUserDto: CreateUserDto) {
+        const {username, password} = createUserDto;
+        const usernameInUse = await this.userModel.findOne({username});
+        if (usernameInUse) {
+            throw new HttpException("Username In Use", 400);
+        }
+
+        const hashedPass = await bcrypt.hash(password, 10);
+
+        await this.userModel.create({
+            username,
+            password: hashedPass
+        });
+
+        return true;
     }
 
     getAllUsers() {
@@ -40,10 +82,10 @@ export class UsersService {
             throw new HttpException("Followed User Info Not Found", 400);
         }
 
-        /*const amIfollowing = await this.userModel.find({follows: followUserInfo._id, _id: followUserDto.userId });
+        const amIfollowing = await this.userModel.find({follows: followUserInfo, _id: followUserDto.userId });
         if (amIfollowing) {
             throw new HttpException("Still Following", 400);
-        }*/
+        }
 
         const myInfoResult = await this.userModel.updateOne({_id: myInfo._id}, {
             $push: {
