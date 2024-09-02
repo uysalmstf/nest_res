@@ -15,11 +15,10 @@ export class UsersController {
     @Post("login")
     async loginUser(@Body() loginUserDto: LoginUserDto) {
 
-        console.log(loginUserDto)
         return await this.usersService.loginUser(loginUserDto);
     }
 
-    @Post()
+    @Post("create")
     async createUser(@Body() createUserDto: CreateUserDto) {
 
         const user = await this.usersService.createUser(createUserDto);

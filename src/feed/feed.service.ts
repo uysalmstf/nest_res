@@ -1,33 +1,39 @@
-import { HttpException, Injectable, Post } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { Posts } from "src/schemas/posts.schema";
-import { Users } from "src/schemas/user.schema";
-import { FeedDto } from "./dto/feed.dto";
+import { Injectable, HttpException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
+import { FeedDto } from './dto/feed.dto';
+import { Posts } from "../schemas/posts.schema";
+import { Users } from "../schemas/user.schema";
 
 @Injectable()
 export class FeedService {
     constructor(
-        @InjectModel(Posts.name) private postModel: Model<Posts>,
-        @InjectModel(Users.name) private userModel: Model<Users>,
+      @InjectRepository(Posts) private postRepository: Repository<Posts>,
+      @InjectRepository(Users) private userRepository: Repository<Users>,
     ) {}
 
     async findUserWithFollows(userId: string): Promise<Users> {
-        return this.userModel.findById(userId).populate('follows').exec();
-      }
+        return this.userRepository.findOne({
+            where: { id: userId },
+            relations: ['follows'],
+        });
+    }
 
     async getFeeds(feedDto: FeedDto, userId: string) {
-        const findUser = await this.userModel.findById(userId);
+        const findUser = await this.userRepository.findOne({ where: { id: userId } });
         if (!findUser) throw new HttpException('User Not Found', 400);
 
-const userWithFollows = await this.findUserWithFollows(userId);
-const followedUserIds = userWithFollows.follows.map(followedUser => followedUser);
-        const posts = await this.postModel
-      .find({ createdBy: { $in: followedUserIds } })
-      .sort({ createdDate: -1 })  // createdDate alanına göre azalan sırada sıralama
-      .populate('createdBy')
-      .exec();
+        const userWithFollows = await this.findUserWithFollows(userId);
+        if (!userWithFollows) throw new HttpException('User Not Found', 400);
 
-    return posts;
+        const followedUserIds = userWithFollows.follows.map(followedUser => followedUser.id);
+
+        const posts = await this.postRepository.find({
+            where: { createdBy: In(followedUserIds) },
+            order: { createdAt: 'DESC' },
+            relations: ['createdBy'],
+        });
+
+        return posts;
     }
 }

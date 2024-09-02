@@ -1,21 +1,35 @@
-import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
+/*import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
 import { Posts } from "./posts.schema";
-import mongoose from "mongoose";
+import mongoose from "mongoose";*/
+import {
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    Unique,
+    ManyToMany,
+    JoinTable,
+    ManyToOne,
+    ObjectIdColumn
+} from "typeorm";
+import { Posts } from "./posts.schema";
 
-@Schema()
-export class Users{
-
-    @Prop({unique: true, required: true})
+@Entity()
+@Unique(['username'])
+export class Users {
+    @ObjectIdColumn()
+    id: string;
+  
+    @Column()
     username: string;
-
-    @Prop()
+  
+    @Column()
     password: string;
-    
-    @Prop({ type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Posts'}] })
+
+    @ManyToMany(() => Posts)
+    @JoinTable()  // Bu tablo için bir ilişkisel tablo oluşturur
     posts: Posts[];
 
-    @Prop({ type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Users'}] })
+    @ManyToMany(() => Users)
+    @JoinTable({ name: 'follows' })  // Many-to-Many ilişki için tablo adı belirleyebilirsiniz
     follows: Users[];
-}
-
-export const UserSchema = SchemaFactory.createForClass(Users);
+  }

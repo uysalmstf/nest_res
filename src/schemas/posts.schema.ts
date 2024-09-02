@@ -1,18 +1,18 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose from "mongoose";
-import { Users } from "./user.schema";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne } from 'typeorm';
+import { Users } from './user.schema';
 
-@Schema()
-export class Posts{
+@Entity()
+export class Posts {
 
-    @Prop({required: true})
+    @PrimaryGeneratedColumn('uuid')  // Otomatik olarak UUID olarak birincil anahtar oluşturur
+    id: string;
+
+    @Column({ type: 'text', nullable: false })  // İçerik metni için sütun tanımı
     content: string;
 
-    @Prop({default: Date.now})
+    @CreateDateColumn()  // Otomatik olarak oluşturulma tarihini belirler
     createdAt: Date;
 
-    @Prop({ type: [{type: mongoose.Schema.Types.ObjectId, ref: 'Users'}] })
+    @ManyToOne(() => Users, (user) => user.posts)  // Bir kullanıcıya ait olan postlar
     createdBy: Users;
 }
-
-export const PostSchema = SchemaFactory.createForClass(Posts);
