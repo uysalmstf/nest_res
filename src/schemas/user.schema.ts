@@ -1,14 +1,9 @@
-/*import { Schema, Prop, SchemaFactory } from "@nestjs/mongoose";
-import { Posts } from "./posts.schema";
-import mongoose from "mongoose";*/
 import {
     Entity,
     Column,
-    PrimaryGeneratedColumn,
     Unique,
     ManyToMany,
     JoinTable,
-    ManyToOne,
     ObjectIdColumn
 } from "typeorm";
 import { Posts } from "./posts.schema";
