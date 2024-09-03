@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "./dto/createUser.dto";
@@ -52,14 +52,17 @@ export class UsersService {
 
             const hashedPass = await bcrypt.hash(password, 10);
 
-            const newUser = this.userRepository.create({
-                username,
-                password: hashedPass
-            });
+            const newUser = new Users();
 
-            await this.userRepository.save(newUser);
+            newUser.username = username;
+            newUser.password = hashedPass;
 
-            return true;
+            const userNew: Users = await this.userRepository.save(newUser);
+
+            return {
+                statusCode: HttpStatus.OK, // 201 Created
+                user: userNew,
+            };
         } catch (error) {
             console.log(error);
             throw new HttpException("Hata", 500);

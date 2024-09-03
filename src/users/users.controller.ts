@@ -4,8 +4,8 @@ import { CreateUserDto } from "./dto/createUser.dto";
 import mongoose from "mongoose";
 import { FollowUserDto } from "./dto/followUser.dto";
 import { LoginUserDto } from "./dto/loginUser.dto";
-import { AuthGuard } from "src/guards/auth.guard";
 import { endWith } from "rxjs";
+import { AuthGuard } from '../guards/auth.guard';
 
 @Controller("users")
 export class UsersController {
